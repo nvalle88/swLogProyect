@@ -14,21 +14,44 @@ namespace bd.swLogProyect.web.Controllers.API
     [Route("api/LogCategories")]
     public class LogCategoriesController : Controller
     {
-        private readonly SwLogDbContext _context;
+        private readonly SwLogDbContext db;
 
-        public LogCategoriesController(SwLogDbContext context)
+        public LogCategoriesController(SwLogDbContext db)
         {
-            _context = context;
+            this.db = db;
         }
 
-        // GET: api/LogCategories
+        // GET: api/LogCategorys
         [HttpGet]
-        public IEnumerable<LogCategory> GetLogCategories()
+        [Route("ListarLogCategories")]
+        public List<LogCategory> GetLogCategorys()
         {
-            return _context.LogCategories;
+            return db.LogCategories.OrderBy(x => x.Name).ToList();
         }
 
-        // GET: api/LogCategories/5
+        public Response Existe(LogCategory logCategory)
+        {
+            var loglevelrespuesta = db.LogCategories.Where(p => p.Name == logCategory.Name).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe una categoría de igual nombre",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Message = "No existe país...",
+                Resultado = db.LogCategories.Where(p => p.LogCategoryId == logCategory.LogCategoryId).FirstOrDefault(),
+            };
+        }
+
+        // GET: api/LogCategorys/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLogCategory([FromRoute] int id)
         {
@@ -37,7 +60,7 @@ namespace bd.swLogProyect.web.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            var logCategory = await _context.LogCategories.SingleOrDefaultAsync(m => m.LogCategoryId == id);
+            var logCategory = await db.LogCategories.SingleOrDefaultAsync(m => m.LogCategoryId == id);
 
             if (logCategory == null)
             {
@@ -47,80 +70,146 @@ namespace bd.swLogProyect.web.Controllers.API
             return Ok(logCategory);
         }
 
-        // PUT: api/LogCategories/5
+        // PUT: api/LogCategorys/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLogCategory([FromRoute] int id, [FromBody] LogCategory logCategory)
+        [Route("EditarLogCategory")]
+        public async Task<Response> PutLogCategory([FromBody] LogCategory logCategory)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = "Módelo inválido",
+                };
             }
-
-            if (id != logCategory.LogCategoryId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(logCategory).State = EntityState.Modified;
+            db.Entry(logCategory).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                var respuesta = Existe(logCategory);
+                if (!respuesta.IsSuccess)
+                {
+                    await db.SaveChangesAsync();
+                    return new entidades.Response
+                    {
+                        IsSuccess = true,
+                        Message = "Ok",
+                    };
+                }
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe un Log Category de igual Nombre...",
+                };
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!LogCategoryExists(id))
+                return new entidades.Response
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    IsSuccess = false,
+                    Message = "Existe un Log Category de igual Nombre...",
+                };
             }
-
-            return NoContent();
         }
 
-        // POST: api/LogCategories
+        // POST: api/LogCategorys
         [HttpPost]
-        public async Task<IActionResult> PostLogCategory([FromBody] LogCategory logCategory)
+        [Route("InsertarLogCategory")]
+
+        public async Task<Response> PostLogCategory([FromBody] LogCategory logCategory)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = "Módelo inválido",
+                };
             }
 
-            _context.LogCategories.Add(logCategory);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var respuesta = Existe(logCategory);
+                if (!respuesta.IsSuccess)
+                {
 
-            return CreatedAtAction("GetLogCategory", new { id = logCategory.LogCategoryId }, logCategory);
+                    db.Add(logCategory);
+                    await db.SaveChangesAsync();
+                    return new entidades.Response
+                    {
+                        IsSuccess = true,
+                        Message = "Ok",
+                    };
+                }
+
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe un Log Category de igual Nombre...",
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                };
+            }
+
+
         }
 
-        // DELETE: api/LogCategories/5
+        // DELETE: api/LogCategorys/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLogCategory([FromRoute] int id)
+        public async Task<Response> DeleteLogCategory([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
+                    };
+                }
 
-            var logCategory = await _context.LogCategories.SingleOrDefaultAsync(m => m.LogCategoryId == id);
-            if (logCategory == null)
+                var logCategory = await db.LogCategories.SingleOrDefaultAsync(m => m.LogCategoryId == id);
+                if (logCategory == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "El Log Category no existe",
+                    };
+                }
+
+                db.LogCategories.Remove(logCategory);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Se ha eliminado ",
+                };
+
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = ex.Message,
+                };
+
             }
-
-            _context.LogCategories.Remove(logCategory);
-            await _context.SaveChangesAsync();
-
-            return Ok(logCategory);
         }
 
         private bool LogCategoryExists(int id)
         {
-            return _context.LogCategories.Any(e => e.LogCategoryId == id);
+            return db.LogCategories.Any(e => e.LogCategoryId == id);
         }
     }
 }

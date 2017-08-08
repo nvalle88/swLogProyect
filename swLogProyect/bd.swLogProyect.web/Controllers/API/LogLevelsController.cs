@@ -14,18 +14,41 @@ namespace bd.swLogProyect.web.Controllers.API
     [Route("api/LogLevels")]
     public class LogLevelsController : Controller
     {
-        private readonly SwLogDbContext _context;
+        private readonly SwLogDbContext db;
 
-        public LogLevelsController(SwLogDbContext context)
+        public LogLevelsController(SwLogDbContext db)
         {
-            _context = context;
+            this.db = db;
         }
 
         // GET: api/LogLevels
         [HttpGet]
-        public IEnumerable<LogLevel> GetLogLevels()
+        [Route("ListarLogLevels")]
+        public List<LogLevel> GetLogLevels()
         {
-            return _context.LogLevels;
+            return db.LogLevels.OrderBy(x=>x.ShortName).ToList();
+        }
+
+        public Response Existe(LogLevel logLevel)
+        {
+            var loglevelrespuesta = db.LogLevels.Where(p => p.Name == logLevel.Name).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe una categoría de igual nombre",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Message = "No existe país...",
+                Resultado = db.LogLevels.Where(p => p.LogLevelId == logLevel.LogLevelId).FirstOrDefault(),
+            };
         }
 
         // GET: api/LogLevels/5
@@ -37,7 +60,7 @@ namespace bd.swLogProyect.web.Controllers.API
                 return BadRequest(ModelState);
             }
 
-            var logLevel = await _context.LogLevels.SingleOrDefaultAsync(m => m.LogLevelId == id);
+            var logLevel = await db.LogLevels.SingleOrDefaultAsync(m => m.LogLevelId == id);
 
             if (logLevel == null)
             {
@@ -49,78 +72,144 @@ namespace bd.swLogProyect.web.Controllers.API
 
         // PUT: api/LogLevels/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLogLevel([FromRoute] int id, [FromBody] LogLevel logLevel)
+        [Route("EditarLogLevel")]
+        public async Task<Response> PutLogLevel( [FromBody] LogLevel logLevel)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = "Módelo inválido",
+                };
             }
-
-            if (id != logLevel.LogLevelId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(logLevel).State = EntityState.Modified;
+            db.Entry(logLevel).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                var respuesta = Existe(logLevel);
+                if (!respuesta.IsSuccess)
+                {
+                     await db.SaveChangesAsync();
+                     return new entidades.Response
+                    {
+                        IsSuccess = true,
+                        Message = "Ok",
+                    };
+                }
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe un Log Level de igual Nombre...",
+                };
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception ex)
             {
-                if (!LogLevelExists(id))
+                return new entidades.Response
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    IsSuccess = false,
+                    Message = "Existe un Log Level de igual Nombre...",
+                };
             }
-
-            return NoContent();
         }
 
         // POST: api/LogLevels
         [HttpPost]
-        public async Task<IActionResult> PostLogLevel([FromBody] LogLevel logLevel)
+        [Route("InsertarLogLevel")]
+
+        public async Task<Response> PostLogLevel([FromBody] LogLevel logLevel)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message="Módelo inválido",
+                };
             }
 
-            _context.LogLevels.Add(logLevel);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var respuesta = Existe(logLevel);
+                if (!respuesta.IsSuccess)
+                {
 
-            return CreatedAtAction("GetLogLevel", new { id = logLevel.LogLevelId }, logLevel);
+                    db.Add(logLevel);
+                    await db.SaveChangesAsync();
+                    return new entidades.Response
+                    {
+                        IsSuccess = true,
+                        Message = "Ok",
+                    };
+                }
+
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe un Log Level de igual Nombre...",
+                };
+
+            }
+            catch (Exception ex)
+            {
+                return new entidades.Response
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                };
+            }
+
+           
         }
 
         // DELETE: api/LogLevels/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteLogLevel([FromRoute] int id)
+        public async Task<Response> DeleteLogLevel([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
+                    };
+                }
 
-            var logLevel = await _context.LogLevels.SingleOrDefaultAsync(m => m.LogLevelId == id);
-            if (logLevel == null)
+                var logLevel = await db.LogLevels.SingleOrDefaultAsync(m => m.LogLevelId == id);
+                if (logLevel == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "El Log Level no existe",
+                    };
+                }
+
+                db.LogLevels.Remove(logLevel);
+                await db.SaveChangesAsync();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Se ha eliminado ",
+                };
+
+            }
+            catch (Exception ex)
             {
-                return NotFound();
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = ex.Message,
+                };
+             
             }
-
-            _context.LogLevels.Remove(logLevel);
-            await _context.SaveChangesAsync();
-
-            return Ok(logLevel);
         }
 
         private bool LogLevelExists(int id)
         {
-            return _context.LogLevels.Any(e => e.LogLevelId == id);
+            return db.LogLevels.Any(e => e.LogLevelId == id);
         }
     }
 }

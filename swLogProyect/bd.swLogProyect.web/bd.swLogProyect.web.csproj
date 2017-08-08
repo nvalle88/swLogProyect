@@ -33,6 +33,7 @@
     <ProjectReference Include="..\bd.sw.externos\bd.sw.externos.csproj" />
     <ProjectReference Include="..\bd.swcompartido.datos\bd.swLogProyect.datos.csproj" />
     <ProjectReference Include="..\bd.swLogProyect.entidades\bd.swLogProyect.entidades.csproj" />
+    <ProjectReference Include="..\bd.swlogProyect.Helpers\bd.swlogProyect.Helpers.csproj" />
   </ItemGroup>
 
 </Project>

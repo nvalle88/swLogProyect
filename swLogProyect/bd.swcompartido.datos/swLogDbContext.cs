@@ -28,6 +28,7 @@ namespace bd.swLogProyect.datos
         public DbSet<bd.swLogProyect.entidades.LogLevel> LogLevels { get; set; }
         public DbSet<bd.swLogProyect.entidades.LogEntry> LogEntries { get; set; }
 
+
         public void EnsureSeedData()
         {
             if (!this.LogCategories.Any())
