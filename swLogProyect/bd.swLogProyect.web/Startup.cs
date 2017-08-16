@@ -49,9 +49,7 @@ namespace bd.swLogProyect.web
                 using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
                 .CreateScope())
                 {
-                    serviceScope.ServiceProvider.GetService<SwLogDbContext>()
-                             .Database.Migrate();
-
+                   
                     serviceScope.ServiceProvider.GetService<SwLogDbContext>().EnsureSeedData();
                 }
 
