@@ -168,7 +168,7 @@ namespace bd.swLogProyect.datos
 
                 for (int i = 0; i < 30000; i++)
                 {
-                    if (i <= 1000)
+                    if (i < 1000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -176,7 +176,7 @@ namespace bd.swLogProyect.datos
                             ApplicationName = "Aplicación1",
                             ExceptionTrace = ",",
                             LogCategoryId = 1,
-                            LogDate = DateTime.Now,
+                            LogDate = DateTime.MinValue,
                             LogLevelId = 1,
                             MachineIP = "10.10.10.10",
                             MachineName = "PC1",
@@ -186,25 +186,25 @@ namespace bd.swLogProyect.datos
                         });
                     }
 
-                    if (i >= 1000 && i <= 2000)
+                    if (i >= 1000 && i < 2000)
                     {
 
                         this.LogEntries.Add(new LogEntry
                         {
-                            ApplicationName = "Aplicación1",
+                            ApplicationName = "Aplicación2",
                             ExceptionTrace = ",",
-                            LogCategoryId = 1,
+                            LogCategoryId = 2,
                             LogDate = DateTime.Now,
-                            LogLevelId = 1,
-                            MachineIP = "10.10.10.10",
-                            MachineName = "PC1",
-                            Message = "Objeto prueba 1",
-                            ObjEntityId = "1",
-                            UserName = "Nestor"
+                            LogLevelId = 2,
+                            MachineIP = "10.10.10.20",
+                            MachineName = "PC2",
+                            Message = "Objeto prueba 2",
+                            ObjEntityId = "2",
+                            UserName = "Nestor 2"
                         });
                     }
 
-                    if (i >= 2000 && i <= 3000)
+                    if (i >= 2000 && i < 3000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -212,7 +212,7 @@ namespace bd.swLogProyect.datos
                             ApplicationName = "Aplicación3",
                             ExceptionTrace = ",",
                             LogCategoryId = 1,
-                            LogDate = DateTime.Now,
+                            LogDate = DateTime.MaxValue,
                             LogLevelId = 1,
                             MachineIP = "10.10.10.30",
                             MachineName = "PC1",
@@ -222,7 +222,7 @@ namespace bd.swLogProyect.datos
                         });
                     }
 
-                    if (i >= 3000 && i <= 4000)
+                    if (i >= 3000 && i < 4000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -240,7 +240,7 @@ namespace bd.swLogProyect.datos
                         });
                     }
 
-                    if (i >= 4000 && i <= 5000)
+                    if (i >= 4000 && i <5000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -258,7 +258,7 @@ namespace bd.swLogProyect.datos
                         });
                     }
 
-                    if (i >= 5000 && i <= 6000)
+                    if (i >= 5000 && i < 6000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -278,7 +278,7 @@ namespace bd.swLogProyect.datos
 
                     /////
 
-                    if (i >= 7000 && i <= 8000)
+                    if (i >= 7000 && i < 8000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -296,7 +296,7 @@ namespace bd.swLogProyect.datos
                         });
                     }
 
-                    if (i >= 8000 && i <= 9000)
+                    if (i >= 8000 && i < 9000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -314,7 +314,7 @@ namespace bd.swLogProyect.datos
                         });
                     }
 
-                    if (i >= 9000 && i <= 10000)
+                    if (i >= 9000 && i < 10000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -332,7 +332,7 @@ namespace bd.swLogProyect.datos
                         });
                     }
 
-                    if (i >= 10000 && i <= 11000)
+                    if (i >= 10000 && i < 11000)
                     {
 
                         this.LogEntries.Add(new LogEntry
@@ -350,7 +350,7 @@ namespace bd.swLogProyect.datos
                         });
                     }
 
-                    if (i >= 12000 && i <= 13000)
+                    if (i >= 12000 && i < 13000)
                     {
 
                         this.LogEntries.Add(new LogEntry

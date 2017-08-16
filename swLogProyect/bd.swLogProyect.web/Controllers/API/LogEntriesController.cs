@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swLogProyect.datos;
 using bd.swLogProyect.entidades;
+using bd.swLogProyect.entidades.ViewModels;
 using bd.swLogProyect.entidades.ObjectTranfer;
 using bd.swlogProyect.Helpers.Helpers;
 
@@ -99,6 +100,35 @@ namespace bd.swLogProyect.web.Controllers.API
                 };
                
             }
+        }
+
+        [HttpPost]
+        [Route("ListaFiltradaLogEntry")]
+        public async Task<List<LogEntry>> GetListaFiltradaLogEntry([FromBody] LogEntryViewModel LogEntryViewModel)
+        {
+            //return await db.LogEntries.Where(x => x.UserName == "Nestor").ToListAsync();
+            var DateStart = LogEntryViewModel.LogDateStart.HasValue ? LogEntryViewModel.LogDateStart : null;
+            var DateFinish = LogEntryViewModel.LogDateFinish.HasValue ? LogEntryViewModel.LogDateFinish : null;
+
+            try
+            {
+                return await ((db.LogEntries.
+                    Where(x => (x.LogLevel.LogLevelId == LogEntryViewModel.LogLevelId || LogEntryViewModel.LogLevelId == 0)
+                    && (x.LogCategoryId == LogEntryViewModel.LogCategoryId || LogEntryViewModel.LogCategoryId == 0)
+                    && (x.ApplicationName.Contains(LogEntryViewModel.ApplicationName) || LogEntryViewModel.ApplicationName == null)
+                    && (x.MachineIP.Contains(LogEntryViewModel.MachineIP) || LogEntryViewModel.MachineIP == null)
+                    && (x.UserName.Contains(LogEntryViewModel.UserName) || LogEntryViewModel.UserName == null)
+                    && (x.LogDate.Date >= DateStart || DateStart == null)
+                    && (x.LogDate.Date <= DateFinish|| DateFinish == null)
+                    && (x.MachineName.Contains(LogEntryViewModel.MachineName) || LogEntryViewModel.MachineName == null))).OrderByDescending(x => x.LogDate).ToListAsync());
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+
         }
     }
 }

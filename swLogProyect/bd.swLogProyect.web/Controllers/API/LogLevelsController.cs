@@ -31,13 +31,13 @@ namespace bd.swLogProyect.web.Controllers.API
 
         public Response Existe(LogLevel logLevel)
         {
-            var loglevelrespuesta = db.LogLevels.Where(p => p.Name == logLevel.Name).FirstOrDefault();
+            var loglevelrespuesta = db.LogLevels.Where(p => p.ShortName == logLevel.ShortName).FirstOrDefault();
             if (loglevelrespuesta != null)
             {
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Existe una categoría de igual nombre",
+                    Message = "Existe un log level de igual nombre corto",
                     Resultado = null,
                 };
 
@@ -46,8 +46,8 @@ namespace bd.swLogProyect.web.Controllers.API
             return new Response
             {
                 IsSuccess = false,
-                Message = "No existe país...",
-                Resultado = db.LogLevels.Where(p => p.LogLevelId == logLevel.LogLevelId).FirstOrDefault(),
+                Message = "No existe log level...",
+                Resultado = db.LogLevels.Where(p => p.ShortName == logLevel.ShortName).FirstOrDefault(),
             };
         }
 
@@ -83,14 +83,69 @@ namespace bd.swLogProyect.web.Controllers.API
                     Message = "Módelo inválido",
                 };
             }
-            db.Entry(logLevel).State = EntityState.Modified;
+            var respuestaLogLevel = db.LogLevels.Where(x => x.LogLevelId == logLevel.LogLevelId).FirstOrDefault();
 
             try
             {
+                if (logLevel.Code == respuestaLogLevel.Code && logLevel.Description == respuestaLogLevel.Description && logLevel.Name == respuestaLogLevel.Name && logLevel.ShortName == respuestaLogLevel.ShortName)
+                {
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "ok",
+                    };
+                }
+
+                if (logLevel.Code != respuestaLogLevel.Code && logLevel.Description == respuestaLogLevel.Description && logLevel.Name == respuestaLogLevel.Name && logLevel.ShortName == respuestaLogLevel.ShortName)
+                {
+                    respuestaLogLevel.Code = logLevel.Code;
+                    db.LogLevels.Update(respuestaLogLevel);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "Ok",
+                        Resultado = logLevel,
+                    };
+                }
+
+
+                if (logLevel.Code == respuestaLogLevel.Code && logLevel.Description != respuestaLogLevel.Description && logLevel.Name == respuestaLogLevel.Name && logLevel.ShortName == respuestaLogLevel.ShortName)
+                {
+                    respuestaLogLevel.Description = logLevel.Description;
+                    db.LogLevels.Update(respuestaLogLevel);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "Ok",
+                        Resultado = logLevel,
+                    };
+                }
+
+                if (logLevel.Code == respuestaLogLevel.Code && logLevel.Description == respuestaLogLevel.Description && logLevel.Name != respuestaLogLevel.Name && logLevel.ShortName == respuestaLogLevel.ShortName)
+                {
+                    respuestaLogLevel.Name = logLevel.Name;
+                    db.LogLevels.Update(respuestaLogLevel);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "Ok",
+                        Resultado = logLevel,
+                    };
+                }
+
                 var respuesta = Existe(logLevel);
                 if (!respuesta.IsSuccess)
                 {
-                     await db.SaveChangesAsync();
+                    respuestaLogLevel.Code = logLevel.Code;
+                    respuestaLogLevel.Description = logLevel.Description;
+                    respuestaLogLevel.Name = respuestaLogLevel.Name;
+                    respuestaLogLevel.ShortName = respuestaLogLevel.ShortName;
+                    db.LogLevels.Update(respuestaLogLevel);
+                    await db.SaveChangesAsync();
+
                      return new entidades.Response
                     {
                         IsSuccess = true,
@@ -100,7 +155,7 @@ namespace bd.swLogProyect.web.Controllers.API
                 return new entidades.Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un Log Level de igual Nombre...",
+                    Message = "Existe un Log Level de igual Nombre Corto...",
                 };
             }
             catch (Exception ex)
