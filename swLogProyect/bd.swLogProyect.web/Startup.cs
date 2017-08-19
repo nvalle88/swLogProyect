@@ -38,9 +38,6 @@ namespace bd.swLogProyect.web
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-
-
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
