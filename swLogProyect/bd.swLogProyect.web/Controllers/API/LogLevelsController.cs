@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swLogProyect.datos;
 using bd.swLogProyect.entidades;
+using bd.swLogProyect.entidades.Utils;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swLogProyect.entidades.Enumeradores;
 
 namespace bd.swLogProyect.web.Controllers.API
 {
@@ -24,146 +28,152 @@ namespace bd.swLogProyect.web.Controllers.API
         // GET: api/LogLevels
         [HttpGet]
         [Route("ListarLogLevels")]
-        public List<LogLevel> GetLogLevels()
+        public async Task<List<LogLevel>> GetLogLevels()
         {
-            return db.LogLevels.OrderBy(x=>x.ShortName).ToList();
-        }
-
-        public Response Existe(LogLevel logLevel)
-        {
-            var loglevelrespuesta = db.LogLevels.Where(p => p.ShortName == logLevel.ShortName).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            try
             {
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = "Existe un log level de igual nombre corto",
-                    Resultado = null,
-                };
-
+                return await db.LogLevels.OrderBy(x => x.Name).ToListAsync();
             }
-
-            return new Response
+            catch (Exception ex)
             {
-                IsSuccess = false,
-                Message = "No existe log level...",
-                Resultado = db.LogLevels.Where(p => p.ShortName == logLevel.ShortName).FirstOrDefault(),
-            };
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una excepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<LogLevel>();
+            }
         }
 
         // GET: api/LogLevels/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetLogLevel([FromRoute] int id)
+        public async Task<Response> GetLogLevel([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var logLevel = await db.LogLevels.SingleOrDefaultAsync(m => m.LogLevelId == id);
-
-            if (logLevel == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(logLevel);
-        }
-
-        // PUT: api/LogLevels/5
-        [HttpPut("{id}")]
-        [Route("EditarLogLevel")]
-        public async Task<Response> PutLogLevel( [FromBody] LogLevel logLevel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return new entidades.Response
-                {
-                    IsSuccess = false,
-                    Message = "Módelo inválido",
-                };
-            }
-            var respuestaLogLevel = db.LogLevels.Where(x => x.LogLevelId == logLevel.LogLevelId).FirstOrDefault();
-
             try
             {
-                if (logLevel.Code == respuestaLogLevel.Code && logLevel.Description == respuestaLogLevel.Description && logLevel.Name == respuestaLogLevel.Name && logLevel.ShortName == respuestaLogLevel.ShortName)
+                if (!ModelState.IsValid)
                 {
                     return new Response
                     {
-                        IsSuccess = true,
-                        Message = "ok",
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
                     };
                 }
 
-                if (logLevel.Code != respuestaLogLevel.Code && logLevel.Description == respuestaLogLevel.Description && logLevel.Name == respuestaLogLevel.Name && logLevel.ShortName == respuestaLogLevel.ShortName)
+                var loglevel = await db.LogLevels.SingleOrDefaultAsync(m => m.LogLevelId == id);
+
+                if (loglevel == null)
                 {
-                    respuestaLogLevel.Code = logLevel.Code;
-                    db.LogLevels.Update(respuestaLogLevel);
-                    await db.SaveChangesAsync();
                     return new Response
                     {
-                        IsSuccess = true,
-                        Message = "Ok",
-                        Resultado = logLevel,
+                        IsSuccess = false,
+                        Message = "No encontrado",
                     };
                 }
 
-
-                if (logLevel.Code == respuestaLogLevel.Code && logLevel.Description != respuestaLogLevel.Description && logLevel.Name == respuestaLogLevel.Name && logLevel.ShortName == respuestaLogLevel.ShortName)
+                return new Response
                 {
-                    respuestaLogLevel.Description = logLevel.Description;
-                    db.LogLevels.Update(respuestaLogLevel);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "Ok",
-                        Resultado = logLevel,
-                    };
-                }
-
-                if (logLevel.Code == respuestaLogLevel.Code && logLevel.Description == respuestaLogLevel.Description && logLevel.Name != respuestaLogLevel.Name && logLevel.ShortName == respuestaLogLevel.ShortName)
-                {
-                    respuestaLogLevel.Name = logLevel.Name;
-                    db.LogLevels.Update(respuestaLogLevel);
-                    await db.SaveChangesAsync();
-                    return new Response
-                    {
-                        IsSuccess = true,
-                        Message = "Ok",
-                        Resultado = logLevel,
-                    };
-                }
-
-                var respuesta = Existe(logLevel);
-                if (!respuesta.IsSuccess)
-                {
-                    respuestaLogLevel.Code = logLevel.Code;
-                    respuestaLogLevel.Description = logLevel.Description;
-                    respuestaLogLevel.Name = respuestaLogLevel.Name;
-                    respuestaLogLevel.ShortName = respuestaLogLevel.ShortName;
-                    db.LogLevels.Update(respuestaLogLevel);
-                    await db.SaveChangesAsync();
-
-                     return new entidades.Response
-                    {
-                        IsSuccess = true,
-                        Message = "Ok",
-                    };
-                }
-                return new entidades.Response
-                {
-                    IsSuccess = false,
-                    Message = "Existe un Log Level de igual Nombre Corto...",
+                    IsSuccess = true,
+                    Message = "Ok",
+                    Resultado = loglevel,
                 };
             }
             catch (Exception ex)
             {
-                return new entidades.Response
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre= Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un Log Level de igual Nombre...",
+                    Message = "Error ",
+                };
+            }
+        }
+
+
+
+        // PUT: api/LogLevels/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutLogLevel([FromRoute] int id, [FromBody] LogLevel LogLevel)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
+
+                var LogLevelActualizar = await db.LogLevels.Where(x => x.LogLevelId == id).FirstOrDefaultAsync();
+                if (LogLevelActualizar != null)
+                {
+                    try
+                    {
+                        LogLevelActualizar.Description = LogLevel.Description;
+                        LogLevelActualizar.Name = LogLevel.Name;
+                        LogLevelActualizar.Code = LogLevel.Code;
+                        LogLevelActualizar.ShortName = LogLevel.ShortName;
+                        db.LogLevels.Update(LogLevelActualizar);
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.Logs),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Excepción"
                 };
             }
         }
@@ -171,50 +181,56 @@ namespace bd.swLogProyect.web.Controllers.API
         // POST: api/LogLevels
         [HttpPost]
         [Route("InsertarLogLevel")]
-
-        public async Task<Response> PostLogLevel([FromBody] LogLevel logLevel)
+        public async Task<Response> PostLogLevel([FromBody] LogLevel LogLevel)
         {
-            if (!ModelState.IsValid)
-            {
-                return new entidades.Response
-                {
-                    IsSuccess = false,
-                    Message="Módelo inválido",
-                };
-            }
-
             try
             {
-                var respuesta = Existe(logLevel);
-                if (!respuesta.IsSuccess)
+                if (!ModelState.IsValid)
                 {
-
-                    db.Add(logLevel);
-                    await db.SaveChangesAsync();
-                    return new entidades.Response
+                    return new Response
                     {
-                        IsSuccess = true,
-                        Message = "Ok",
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
                     };
                 }
 
-                return new entidades.Response
+                var respuesta = Existe(LogLevel);
+                if (!respuesta.IsSuccess)
+                {
+                    db.LogLevels.Add(LogLevel);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "OK"
+                    };
+                }
+
+                return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un Log Level de igual Nombre...",
+                    Message = "OK"
                 };
 
             }
             catch (Exception ex)
             {
-                return new entidades.Response
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
                 {
                     IsSuccess = false,
-                    Message = ex.Message,
+                    Message = "Error ",
                 };
             }
-
-           
         }
 
         // DELETE: api/LogLevels/5
@@ -228,37 +244,45 @@ namespace bd.swLogProyect.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = "Módelo no válido ",
                     };
                 }
 
-                var logLevel = await db.LogLevels.SingleOrDefaultAsync(m => m.LogLevelId == id);
-                if (logLevel == null)
+                var respuesta = await db.LogLevels.SingleOrDefaultAsync(m => m.LogLevelId == id);
+                if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "El Log Level no existe",
+                        Message = "No existe ",
                     };
                 }
-
-                db.LogLevels.Remove(logLevel);
+                db.LogLevels.Remove(respuesta);
                 await db.SaveChangesAsync();
+
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Se ha eliminado ",
+                    Message = "Eliminado ",
                 };
-
             }
             catch (Exception ex)
             {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una excepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = ex.Message,
+                    IsSuccess = false,
+                    Message = "Error ",
                 };
-             
             }
         }
 
@@ -266,5 +290,28 @@ namespace bd.swLogProyect.web.Controllers.API
         {
             return db.LogLevels.Any(e => e.LogLevelId == id);
         }
+
+        public Response Existe(LogLevel LogLevel)
+        {
+            var bdd = LogLevel.ShortName.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.LogLevels.Where(p => p.ShortName.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe un log level de igual nombre",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = loglevelrespuesta,
+            };
+        }
+
     }
 }

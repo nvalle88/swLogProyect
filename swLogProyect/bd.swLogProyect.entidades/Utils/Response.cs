@@ -1,4 +1,4 @@
-namespace bd.swLogProyect.entidades
+﻿namespace bd.swLogProyect.entidades.Utils
 {
     public  class Response
     {

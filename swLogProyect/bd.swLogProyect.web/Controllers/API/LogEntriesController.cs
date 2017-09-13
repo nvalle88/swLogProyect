@@ -10,6 +10,7 @@ using bd.swLogProyect.entidades;
 using bd.swLogProyect.entidades.ViewModels;
 using bd.swLogProyect.entidades.ObjectTranfer;
 using bd.swlogProyect.Helpers.Helpers;
+using bd.swLogProyect.entidades.Utils;
 
 namespace bd.swLogProyect.web.Controllers.API
 {

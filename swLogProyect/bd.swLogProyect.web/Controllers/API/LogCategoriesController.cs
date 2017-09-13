@@ -7,6 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swLogProyect.datos;
 using bd.swLogProyect.entidades;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swLogProyect.entidades.Enumeradores;
+using bd.swLogProyect.entidades.Utils;
 
 namespace bd.swLogProyect.web.Controllers.API
 {
@@ -24,91 +28,149 @@ namespace bd.swLogProyect.web.Controllers.API
         // GET: api/LogCategorys
         [HttpGet]
         [Route("ListarLogCategories")]
-        public List<LogCategory> GetLogCategorys()
+        public async Task<List<LogCategory>> GetLogCategory()
         {
-            return db.LogCategories.OrderBy(x => x.Name).ToList();
-        }
-
-        public Response Existe(LogCategory logCategory)
-        {
-            var loglevelrespuesta = db.LogCategories.Where(p => p.Name == logCategory.Name).FirstOrDefault();
-            if (loglevelrespuesta != null)
+            try
             {
-                return new Response
-                {
-                    IsSuccess = true,
-                    Message = "Existe una categoría de igual nombre",
-                    Resultado = null,
-                };
-
+                return await db.LogCategories.OrderBy(x => x.Name).ToListAsync();
             }
-
-            return new Response
+            catch (Exception ex)
             {
-                IsSuccess = false,
-                Message = "No existe país...",
-                Resultado = db.LogCategories.Where(p => p.LogCategoryId == logCategory.LogCategoryId).FirstOrDefault(),
-            };
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una excepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<LogCategory>();
+            }
         }
 
         // GET: api/LogCategorys/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetLogCategory([FromRoute] int id)
+        public async Task<Response> GetLogCategory([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var logCategory = await db.LogCategories.SingleOrDefaultAsync(m => m.LogCategoryId == id);
-
-            if (logCategory == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(logCategory);
-        }
-
-        // PUT: api/LogCategorys/5
-        [HttpPut("{id}")]
-        [Route("EditarLogCategory")]
-        public async Task<Response> PutLogCategory([FromBody] LogCategory logCategory)
-        {
-            if (!ModelState.IsValid)
-            {
-                return new entidades.Response
-                {
-                    IsSuccess = false,
-                    Message = "Módelo inválido",
-                };
-            }
-            db.Entry(logCategory).State = EntityState.Modified;
-
             try
             {
-                var respuesta = Existe(logCategory);
-                if (!respuesta.IsSuccess)
+                if (!ModelState.IsValid)
                 {
-                    await db.SaveChangesAsync();
-                    return new entidades.Response
+                    return new Response
                     {
-                        IsSuccess = true,
-                        Message = "Ok",
+                        IsSuccess = false,
+                        Message = "Módelo no válido",
                     };
                 }
-                return new entidades.Response
+
+                var logcategory = await db.LogCategories.SingleOrDefaultAsync(m => m.LogCategoryId == id);
+
+                if (logcategory == null)
                 {
-                    IsSuccess = false,
-                    Message = "Existe un Log Category de igual Nombre...",
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "No encontrado",
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Ok",
+                    Resultado = logcategory,
                 };
             }
             catch (Exception ex)
             {
-                return new entidades.Response
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un Log Category de igual Nombre...",
+                    Message = "Error ",
+                };
+            }
+        }
+
+        // PUT: api/LogCategorys/5
+        [HttpPut("{id}")]
+        public async Task<Response> PutLogCategory([FromRoute] int id, [FromBody] LogCategory LogCategory)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
+                    };
+                }
+
+                var LogCategoryActualizar = await db.LogCategories.Where(x => x.LogCategoryId == id).FirstOrDefaultAsync();
+                if (LogCategoryActualizar != null)
+                {
+                    try
+                    {
+                        LogCategoryActualizar.Description = LogCategory.Description;
+                        LogCategoryActualizar.Name = LogCategory.Name;
+                        LogCategoryActualizar.ParameterValue = LogCategory.ParameterValue;
+                        db.LogCategories.Update(LogCategoryActualizar);
+                        await db.SaveChangesAsync();
+
+                        return new Response
+                        {
+                            IsSuccess = true,
+                            Message = "Ok",
+                        };
+
+                    }
+                    catch (Exception ex)
+                    {
+                        await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                        {
+                            ApplicationName = Convert.ToString(Aplicacion.Logs),
+                            ExceptionTrace = ex,
+                            Message = "Se ha producido una excepción",
+                            LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                            LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                            UserName = "",
+
+                        });
+                        return new Response
+                        {
+                            IsSuccess = false,
+                            Message = "Error ",
+                        };
+                    }
+                }
+
+
+
+
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Existe"
+                };
+            }
+            catch (Exception)
+            {
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = "Excepción"
                 };
             }
         }
@@ -116,50 +178,56 @@ namespace bd.swLogProyect.web.Controllers.API
         // POST: api/LogCategorys
         [HttpPost]
         [Route("InsertarLogCategory")]
-
-        public async Task<Response> PostLogCategory([FromBody] LogCategory logCategory)
+        public async Task<Response> PostLogCategory([FromBody] LogCategory LogCategory)
         {
-            if (!ModelState.IsValid)
-            {
-                return new entidades.Response
-                {
-                    IsSuccess = false,
-                    Message = "Módelo inválido",
-                };
-            }
-
             try
             {
-                var respuesta = Existe(logCategory);
-                if (!respuesta.IsSuccess)
+                if (!ModelState.IsValid)
                 {
-
-                    db.Add(logCategory);
-                    await db.SaveChangesAsync();
-                    return new entidades.Response
+                    return new Response
                     {
-                        IsSuccess = true,
-                        Message = "Ok",
+                        IsSuccess = false,
+                        Message = "Módelo inválido"
                     };
                 }
 
-                return new entidades.Response
+                var respuesta = Existe(LogCategory);
+                if (!respuesta.IsSuccess)
+                {
+                    db.LogCategories.Add(LogCategory);
+                    await db.SaveChangesAsync();
+                    return new Response
+                    {
+                        IsSuccess = true,
+                        Message = "OK"
+                    };
+                }
+
+                return new Response
                 {
                     IsSuccess = false,
-                    Message = "Existe un Log Category de igual Nombre...",
+                    Message = "OK"
                 };
 
             }
             catch (Exception ex)
             {
-                return new entidades.Response
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
                 {
                     IsSuccess = false,
-                    Message = ex.Message,
+                    Message = "Error ",
                 };
             }
-
-
         }
 
         // DELETE: api/LogCategorys/5
@@ -173,43 +241,73 @@ namespace bd.swLogProyect.web.Controllers.API
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "Módelo no válido",
+                        Message = "Módelo no válido ",
                     };
                 }
 
-                var logCategory = await db.LogCategories.SingleOrDefaultAsync(m => m.LogCategoryId == id);
-                if (logCategory == null)
+                var respuesta = await db.LogCategories.SingleOrDefaultAsync(m => m.LogCategoryId == id);
+                if (respuesta == null)
                 {
                     return new Response
                     {
                         IsSuccess = false,
-                        Message = "El Log Category no existe",
+                        Message = "No existe ",
                     };
                 }
-
-                db.LogCategories.Remove(logCategory);
+                db.LogCategories.Remove(respuesta);
                 await db.SaveChangesAsync();
+
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Se ha eliminado ",
+                    Message = "Eliminado ",
                 };
-
             }
             catch (Exception ex)
             {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = "Se ha producido una exepción",
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
                 return new Response
                 {
-                    IsSuccess = true,
-                    Message = ex.Message,
+                    IsSuccess = false,
+                    Message = "Error ",
                 };
-
             }
         }
 
         private bool LogCategoryExists(int id)
         {
             return db.LogCategories.Any(e => e.LogCategoryId == id);
+        }
+
+        public Response Existe(LogCategory LogCategory)
+        {
+            var bdd = LogCategory.ParameterValue.ToUpper().TrimEnd().TrimStart();
+            var loglevelrespuesta = db.LogCategories.Where(p => p.ParameterValue.ToUpper().TrimStart().TrimEnd() == bdd).FirstOrDefault();
+            if (loglevelrespuesta != null)
+            {
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = "Existe un sistema de igual nombre",
+                    Resultado = null,
+                };
+
+            }
+
+            return new Response
+            {
+                IsSuccess = false,
+                Resultado = loglevelrespuesta,
+            };
         }
     }
 }
