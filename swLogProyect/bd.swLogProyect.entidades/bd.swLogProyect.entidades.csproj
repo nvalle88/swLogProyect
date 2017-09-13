@@ -4,4 +4,13 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Constantes\" />
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="bd.log.guardar" Version="1.0.0" />
+  </ItemGroup>
+
 </Project>

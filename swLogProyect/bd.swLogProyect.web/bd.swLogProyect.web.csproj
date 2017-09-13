@@ -7,7 +7,15 @@
   <PropertyGroup>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
   </PropertyGroup>
+
   <ItemGroup>
+    <Compile Remove="Controllers\MVC\**" />
+    <Content Remove="Controllers\MVC\**" />
+    <EmbeddedResource Remove="Controllers\MVC\**" />
+    <None Remove="Controllers\MVC\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="bd.log.guardar" Version="1.0.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.3" />
@@ -27,11 +35,8 @@
     <Folder Include="Controllers\API\" />
     <Folder Include="Controllers\API\" />
     <Folder Include="Controllers\API\" />
-    <Folder Include="Controllers\MVC\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\SalvarLogEntry\bd.guardarlog.servicios\bd.log.guardar.csproj" />
-    <ProjectReference Include="..\bd.sw.externos\bd.sw.externos.csproj" />
     <ProjectReference Include="..\bd.swcompartido.datos\bd.swLogProyect.datos.csproj" />
     <ProjectReference Include="..\bd.swLogProyect.entidades\bd.swLogProyect.entidades.csproj" />
     <ProjectReference Include="..\bd.swlogProyect.Helpers\bd.swlogProyect.Helpers.csproj" />

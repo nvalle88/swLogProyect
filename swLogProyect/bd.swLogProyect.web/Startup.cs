@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using bd.swLogProyect.datos;
+using bd.swLogProyect.entidades.Helpers;
 
 namespace bd.swLogProyect.web
 {
@@ -23,13 +24,15 @@ namespace bd.swLogProyect.web
         public IConfigurationRoot Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+        public async void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
             services.AddMvc();
             services.AddDbContext<SwLogDbContext>(options =>
               options.UseSqlServer(Configuration.GetConnectionString("LogConnection")));
-           
+
+            await InicializarWebApp.Inicializar("WebAppTH");
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,7 +49,7 @@ namespace bd.swLogProyect.web
                 using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
                 .CreateScope())
                 {
-                    serviceScope.ServiceProvider.GetService<SwLogDbContext>().Database.Migrate();
+                   // serviceScope.ServiceProvider.GetService<SwLogDbContext>().Database.Migrate();
                      serviceScope.ServiceProvider.GetService<SwLogDbContext>().EnsureSeedData();
                 }
 

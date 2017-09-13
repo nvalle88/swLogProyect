@@ -40,7 +40,7 @@ namespace bd.swLogProyect.web.Controllers.API
                 {
                     ApplicationName = Convert.ToString(Aplicacion.Logs),
                     ExceptionTrace = ex,
-                    Message = "Se ha producido una excepción",
+                    Message = Mensaje.Excepcion,
                     LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
                     LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
                     UserName = "",
