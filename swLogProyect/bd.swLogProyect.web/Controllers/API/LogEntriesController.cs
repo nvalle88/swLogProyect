@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bd.swLogProyect.datos;
 using bd.swLogProyect.entidades;
-using bd.swLogProyect.entidades.ViewModels;
-using bd.swLogProyect.entidades.ObjectTranfer;
-using bd.swlogProyect.Helpers.Helpers;
+using bd.log.guardar.Servicios;
+using bd.log.guardar.ObjectTranfer;
+using bd.swLogProyect.entidades.Enumeradores;
 using bd.swLogProyect.entidades.Utils;
+using bd.swlogProyect.Helpers.Helpers;
+using bd.swLogProyect.entidades.ViewModels;
 
 namespace bd.swLogProyect.web.Controllers.API
 {
@@ -25,32 +27,6 @@ namespace bd.swLogProyect.web.Controllers.API
             this.db = db;
         }
 
-        // GET: api/LogEntries
-        [HttpGet]
-        public IEnumerable<LogEntry> GetLogEntries()
-        {
-            return db.LogEntries;
-        }
-
-        // GET: api/LogEntries/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetLogEntry([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var logEntry = await db.LogEntries.SingleOrDefaultAsync(m => m.LogEntryId == id);
-
-            if (logEntry == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(logEntry);
-        }
-
 
         // POST: api/LogEntries
         [HttpPost]
@@ -62,7 +38,7 @@ namespace bd.swLogProyect.web.Controllers.API
                 return new Response
                 {
                     IsSuccess=false,
-                    Message="MÓDELO INVÁLIDO",
+                    Message=Mensaje.ModeloInvalido,
                 } ;
             }
 
@@ -88,18 +64,29 @@ namespace bd.swLogProyect.web.Controllers.API
                 return new Response
                 {
                     IsSuccess = true,
-                    Message = "Ok",
+                    Message = Mensaje.Satisfactorio,
                 };
 
             }
             catch (Exception ex)
             {
-              return new  Response
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+
+                return new Response
                 {
                     IsSuccess = false,
-                    Message = ex.Message,
+                    Message = Mensaje.Error,
                 };
-               
+
             }
         }
 
@@ -107,7 +94,6 @@ namespace bd.swLogProyect.web.Controllers.API
         [Route("ListaFiltradaLogEntry")]
         public async Task<List<LogEntry>> GetListaFiltradaLogEntry([FromBody] LogEntryViewModel LogEntryViewModel)
         {
-            //return await db.LogEntries.Where(x => x.UserName == "Nestor").ToListAsync();
             var DateStart = LogEntryViewModel.LogDateStart.HasValue ? LogEntryViewModel.LogDateStart : null;
             var DateFinish = LogEntryViewModel.LogDateFinish.HasValue ? LogEntryViewModel.LogDateFinish : null;
 
@@ -126,7 +112,17 @@ namespace bd.swLogProyect.web.Controllers.API
             catch (Exception ex)
             {
 
-                throw;
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new List<LogEntry>();
             }
 
 
