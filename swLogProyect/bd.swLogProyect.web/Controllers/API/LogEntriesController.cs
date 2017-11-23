@@ -33,6 +33,9 @@ namespace bd.swLogProyect.web.Controllers.API
         [Route("InsertarLonEntry")]
         public async Task<Response> PostLogEntry([FromBody] LogEntryTranfer logEntryTranfer)
         {
+
+            string objectNext = string.Empty, objectPrevious = string.Empty;
+
             if (!ModelState.IsValid)
             {
                 return new Response
@@ -42,12 +45,33 @@ namespace bd.swLogProyect.web.Controllers.API
                 } ;
             }
 
+
+
+            if (logEntryTranfer.ObjectNext == null)
+            {
+                objectNext = "NULL";
+            }
+            else
+            {
+                objectNext = logEntryTranfer.ObjectNext.ToString();
+            }
+
+            if (logEntryTranfer.ObjectPrevious == null)
+            {
+                objectPrevious = "NULL";
+            }
+            else
+            {
+                objectPrevious = logEntryTranfer.ObjectPrevious.ToString();
+            }
             try
             {
                 var logLevelID = db.LogLevels.FirstOrDefault(l => l.ShortName.Contains(logEntryTranfer.LogLevelShortName)).LogLevelId;
                 var logCategoryID = db.LogCategories.FirstOrDefault(l => l.ParameterValue.Contains(logEntryTranfer.LogCategoryParametre)).LogCategoryId;
 
-                db.Add(new LogEntry
+                
+
+                LogEntry logEntry = new LogEntry
                 {
                     UserName = logEntryTranfer.UserName,
                     ApplicationName = logEntryTranfer.ApplicationName,
@@ -58,8 +82,14 @@ namespace bd.swLogProyect.web.Controllers.API
                     MachineIP = LogNetworkHelper.GetRemoteIpClientAddress(),
                     MachineName = LogNetworkHelper.GetClientMachineName(),
                     Message = logEntryTranfer.Message,
-                    ObjEntityId = logEntryTranfer.EntityID
-                });
+                    ObjectName = logEntryTranfer.EntityID,
+                    ObjectPrevious = objectPrevious,
+                    ObjectNext = objectNext
+                };
+
+
+
+                db.Add(logEntry);
                await db.SaveChangesAsync();
                 return new Response
                 {

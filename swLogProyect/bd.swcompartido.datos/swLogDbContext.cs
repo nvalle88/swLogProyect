@@ -15,14 +15,84 @@ namespace bd.swLogProyect.datos
 
         }
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<bd.swLogProyect.entidades.LogCategory>(entity =>
+            {
+                entity.HasKey(e => e.LogCategoryId)
+                    .HasName("PK_LogCategories");
 
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(1024);
 
-            base.OnModelCreating(builder);
-            // Customize the ASP.NET Identity model and override the defaults if needed.
-            // For example, you can rename the ASP.NET Identity table names and more.
-            // Add your customizations after calling base.OnModelCreating(builder);
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(64);
+
+                entity.Property(e => e.ParameterValue)
+                    .IsRequired()
+                    .HasMaxLength(32);
+            });
+
+            modelBuilder.Entity<bd.swLogProyect.entidades.LogEntry>(entity =>
+            {
+                entity.HasKey(e => e.LogEntryId)
+                    .HasName("PK_LogEntries");
+
+                entity.HasIndex(e => e.LogCategoryId)
+                    .HasName("IX_LogEntries_LogCategoryId");
+
+                entity.HasIndex(e => e.LogLevelId)
+                    .HasName("IX_LogEntries_LogLevelId");
+
+                entity.Property(e => e.ApplicationName)
+                    .IsRequired()
+                    .HasMaxLength(1024);
+
+                entity.Property(e => e.MachineIP)
+                    .IsRequired()
+                    .HasColumnName("MachineIP")
+                    .HasMaxLength(1024);
+
+                entity.Property(e => e.MachineName)
+                    .IsRequired()
+                    .HasMaxLength(1024);
+
+                entity.Property(e => e.Message)
+                    .IsRequired()
+                    .HasMaxLength(1024);
+
+                entity.Property(e => e.ObjectName)
+                    .IsRequired()
+                    .HasMaxLength(1024);
+
+                entity.Property(e => e.ObjectNext).HasMaxLength(1024);
+
+                entity.Property(e => e.ObjectPrevious).HasMaxLength(1024);
+
+                entity.Property(e => e.UserName)
+                    .IsRequired()
+                    .HasMaxLength(1024);
+            });
+
+            modelBuilder.Entity<bd.swLogProyect.entidades.LogLevel>(entity =>
+            {
+                entity.HasKey(e => e.LogLevelId)
+                    .HasName("PK_LogLevels");
+
+                entity.Property(e => e.Description)
+                    .IsRequired()
+                    .HasMaxLength(1024);
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.ShortName)
+                    .IsRequired()
+                    .HasMaxLength(5);
+            });
         }
 
 

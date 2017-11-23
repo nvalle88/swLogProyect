@@ -20,8 +20,8 @@ namespace bd.swLogProyect.entidades
 
         [Required]
         [StringLength(1024)]
-        [Display(Name = "Id Entidad")]
-        public string ObjEntityId { get; set; }
+        [Display(Name = "Nombre Objeto")]
+        public string ObjectName { get; set; }
 
         [StringLength(4096)]
         [Display(Name = "Excepción")]
@@ -46,6 +46,17 @@ namespace bd.swLogProyect.entidades
         [StringLength(1024)]
         [Display(Name = "IP Dispositivo")]
         public string ApplicationName { get; set; }
+
+        [Required]
+        [StringLength(1024)]
+        [Display(Name = "Objeto Anterior")]
+        public string ObjectPrevious { get; set; }
+
+        [Required]
+        [StringLength(1024)]
+        [Display(Name = "Objeto Siguiente")]
+        public string ObjectNext { get; set; }
+
 
         [Required]
         public int LogLevelId { get; set; }
