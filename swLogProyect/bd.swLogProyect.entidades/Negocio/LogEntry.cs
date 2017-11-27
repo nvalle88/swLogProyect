@@ -24,7 +24,7 @@ namespace bd.swLogProyect.entidades
         public string ObjectName { get; set; }
 
         [StringLength(4096)]
-        [Display(Name = "Excepción")]
+        [Display(Name = "Excepcion")]
         public string ExceptionTrace { get; set; }
 
         [Required]

@@ -120,6 +120,60 @@ namespace bd.swLogProyect.web.Controllers.API
             }
         }
 
+
+        // GET: api/LogEntries/5
+        [HttpGet("{id}")]
+        public async Task<Response> GetLogEntries([FromRoute] int id)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.ModeloInvalido,
+                    };
+                }
+
+                var logentry = await db.LogEntries.SingleOrDefaultAsync(m => m.LogEntryId == id);
+
+                if (logentry == null)
+                {
+                    return new Response
+                    {
+                        IsSuccess = false,
+                        Message = Mensaje.RegistroNoEncontrado,
+                    };
+                }
+
+                return new Response
+                {
+                    IsSuccess = true,
+                    Message = Mensaje.Satisfactorio,
+                    Resultado = logentry,
+                };
+            }
+            catch (Exception ex)
+            {
+                await GuardarLogService.SaveLogEntry(new LogEntryTranfer
+                {
+                    ApplicationName = Convert.ToString(Aplicacion.Logs),
+                    ExceptionTrace = ex,
+                    Message = Mensaje.Excepcion,
+                    LogCategoryParametre = Convert.ToString(LogCategoryParameter.Critical),
+                    LogLevelShortName = Convert.ToString(LogLevelParameter.ERR),
+                    UserName = "",
+
+                });
+                return new Response
+                {
+                    IsSuccess = false,
+                    Message = Mensaje.Error,
+                };
+            }
+        }
+
         [HttpPost]
         [Route("ListaFiltradaLogEntry")]
         public async Task<List<LogEntry>> GetListaFiltradaLogEntry([FromBody] LogEntryViewModel LogEntryViewModel)
