@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace bd.swLogProyect.entidades
@@ -10,8 +11,10 @@ namespace bd.swLogProyect.entidades
         ERR, ADV, INFO
     }
 
+    [Table("Niveles")]
     public class LogLevel
     {
+        [Column("NivelId")]
         public int LogLevelId { get; set; }
 
         [Required]

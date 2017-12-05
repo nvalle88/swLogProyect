@@ -2,6 +2,7 @@
 using System.Linq;
 using bd.swLogProyect.entidades;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System;
 
 namespace bd.swLogProyect.datos
@@ -23,15 +24,15 @@ namespace bd.swLogProyect.datos
                     .HasName("PK_LogCategories");
 
                 entity.Property(e => e.Description)
-                    .IsRequired()
+                    .IsRequired().HasColumnName("Descripcion")
                     .HasMaxLength(1024);
 
                 entity.Property(e => e.Name)
-                    .IsRequired()
+                    .IsRequired().HasColumnName("Nombre")
                     .HasMaxLength(64);
 
                 entity.Property(e => e.ParameterValue)
-                    .IsRequired()
+                    .IsRequired().HasColumnName("ValorParametro")
                     .HasMaxLength(32);
             });
 
@@ -41,38 +42,58 @@ namespace bd.swLogProyect.datos
                     .HasName("PK_LogEntries");
 
                 entity.HasIndex(e => e.LogCategoryId)
-                    .HasName("IX_LogEntries_LogCategoryId");
+                    .HasName("IX_LogEntries_CategoriasId");
 
                 entity.HasIndex(e => e.LogLevelId)
                     .HasName("IX_LogEntries_LogLevelId");
 
+                entity.Property(e => e.LogDate)
+                   .IsRequired()
+                   .HasColumnName("Fecha")
+                   .HasColumnType("datetime2");
+
+
                 entity.Property(e => e.ApplicationName)
                     .IsRequired()
+                    .HasColumnName("NombreAplicacion")
                     .HasMaxLength(1024);
 
                 entity.Property(e => e.MachineIP)
                     .IsRequired()
-                    .HasColumnName("MachineIP")
+                    .HasColumnName("IPMaquina")
                     .HasMaxLength(1024);
+
+                entity.Property(e => e.ExceptionTrace)
+                   .IsRequired()
+                   .HasColumnName("Exception")
+                   .HasColumnType("text");
 
                 entity.Property(e => e.MachineName)
                     .IsRequired()
+                    .HasColumnName("NombreMaquina")
                     .HasMaxLength(1024);
 
                 entity.Property(e => e.Message)
                     .IsRequired()
+                    .HasColumnName("RutaURL")
                     .HasMaxLength(1024);
 
                 entity.Property(e => e.ObjectName)
                     .IsRequired()
+                    .HasColumnName("Modulo")
                     .HasMaxLength(1024);
 
-                entity.Property(e => e.ObjectNext).HasMaxLength(1024);
+                entity.Property(e => e.ObjectNext)
+                .HasColumnName("ObjectoActual")
+                .HasColumnType("text");
 
-                entity.Property(e => e.ObjectPrevious).HasMaxLength(1024);
+                entity.Property(e => e.ObjectPrevious)
+                .HasColumnName("ObjetoAnterior")
+                .HasColumnType("text");
 
                 entity.Property(e => e.UserName)
                     .IsRequired()
+                    .HasColumnName("NombreUsuario")
                     .HasMaxLength(1024);
             });
 
@@ -82,15 +103,23 @@ namespace bd.swLogProyect.datos
                     .HasName("PK_LogLevels");
 
                 entity.Property(e => e.Description)
+                    .HasColumnName("Descripcion")
                     .IsRequired()
                     .HasMaxLength(1024);
 
+                entity.Property(e => e.Code)
+                    .HasColumnName("Codigo")
+                    .IsRequired()
+                    .HasColumnType("int");
+
                 entity.Property(e => e.Name)
                     .IsRequired()
+                    .HasColumnName("Nombre")
                     .HasMaxLength(20);
 
                 entity.Property(e => e.ShortName)
                     .IsRequired()
+                    .HasColumnName("NombreCorto")
                     .HasMaxLength(5);
             });
         }

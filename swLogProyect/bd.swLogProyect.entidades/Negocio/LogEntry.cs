@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace bd.swLogProyect.entidades
 {
+
+    [Table("Log")]
     public class LogEntry
     {
+        [Column("LogId")]
         public int LogEntryId { get; set; }
 
         [Required]

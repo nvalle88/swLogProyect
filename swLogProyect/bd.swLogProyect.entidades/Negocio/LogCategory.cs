@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace bd.swLogProyect.entidades
@@ -10,8 +11,10 @@ namespace bd.swLogProyect.entidades
         Permission, Activation, Critical, ChangeInformation, NetActivity, Create, Edit, Delete
     }
 
+    [Table("Categorias")]
     public class LogCategory
     {
+        [Column("CategoriaId")]
         public int LogCategoryId { get; set; }
 
         [Required]
