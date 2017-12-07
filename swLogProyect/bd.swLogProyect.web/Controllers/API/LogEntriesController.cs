@@ -89,7 +89,7 @@ namespace bd.swLogProyect.web.Controllers.API
 
 
 
-                db.Add(logEntry);
+                db.LogEntries.Add(logEntry);
                await db.SaveChangesAsync();
                 return new Response
                 {

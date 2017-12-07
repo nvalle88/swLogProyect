@@ -63,9 +63,11 @@ namespace bd.swLogProyect.entidades
 
 
         [Required]
+        [Column("NivelId")]
         public int LogLevelId { get; set; }
 
         [Required]
+        [Column("CategoriaId")]
         public int LogCategoryId { get; set; }
 
        
