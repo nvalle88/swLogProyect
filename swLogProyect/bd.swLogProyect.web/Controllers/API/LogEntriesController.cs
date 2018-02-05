@@ -189,7 +189,7 @@ namespace bd.swLogProyect.web.Controllers.API
                     && (x.UserName.Contains(LogEntryViewModel.UserName) || LogEntryViewModel.UserName == null)
                     && (x.LogDate.Date >= DateStart || DateStart == null)
                     && (x.LogDate.Date <= DateFinish|| DateFinish == null)
-                    && (x.MachineName.Contains(LogEntryViewModel.MachineName) || LogEntryViewModel.MachineName == null))).OrderByDescending(x => x.LogDate).ToListAsync());
+                    && (x.MachineName.Contains(LogEntryViewModel.MachineName) || LogEntryViewModel.MachineName == null))).OrderByDescending(x => x.LogDate).Include(x=>x.LogCategory).Include(x=>x.LogLevel).ToListAsync());
             }
             catch (Exception ex)
             {

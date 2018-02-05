@@ -28,6 +28,8 @@ namespace bd.swLogProyect.web
         {
             // Add framework services.
             services.AddMvc();
+            services.AddMvc().AddJsonOptions(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
             services.AddDbContext<SwLogDbContext>(options =>
               options.UseSqlServer(Configuration.GetConnectionString("LogConnection")));
 
